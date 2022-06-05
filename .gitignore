@@ -58,6 +58,7 @@ a.out
 SDL2Test
 drawtest
 drawtest.exe
+ignore
 
 CMakeLists.txt.user
 CMakeCache.txt
