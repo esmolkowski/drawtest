@@ -56,6 +56,8 @@ dkms.conf
 build
 a.out
 SDL2Test
+drawtest
+drawtest.exe
 
 CMakeLists.txt.user
 CMakeCache.txt
