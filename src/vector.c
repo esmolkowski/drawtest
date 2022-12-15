@@ -95,7 +95,12 @@ void vector_move_angled(Vector *pos, double angle, double distance)
     pos->y = y;
 }
 
-double vector_distance(Vector *v1, Vector *v2)
+double vector_distance(Vector v1, Vector v2)
 {
-    return sqrt( pow(v1->x-v2->x,2)+pow(v1->y-v2->y,2)+pow(v1->z-v2->z,2) );
+    return sqrt( pow(v1.x-v2.x,2)+pow(v1.y-v2.y,2)+pow(v1.z-v2.z,2) );
+}
+
+double vector_magnitute(Vector vector)
+{
+    return sqrt( pow(vector.x,2) + pow(vector.y,2) + pow(vector.z,2) );
 }

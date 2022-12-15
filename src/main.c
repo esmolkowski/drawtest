@@ -47,107 +47,46 @@ int main(int argc, char *argv[])
     SDL_RenderPresent(renderer);
 
     // Set up environment
-    Environment *environment = environment_create_environment(20);
-    environment->entities[0] = environment_create_entity(
-        models_create_pyramid()
-    );
-    environment->entities[0]->velocity.z = .2;
-    for (int i = 1; i < 3; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = 50;
-        environment->entities[i]->position.y = 50;
-        environment->entities[i]->position.z = ((i-1)*20)+10;
-    }
-    for (int i = 3; i < 5; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = -30;
-        environment->entities[i]->position.y = -20;
-        environment->entities[i]->position.z = ((i-3)*20)+10;
-    }
-    for (int i = 5; i < 6; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = 25;
-        environment->entities[i]->position.y = -30;
-        environment->entities[i]->position.z = ((i-5)*20)+10;
-    }
-    for (int i = 6; i < 8; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = -70;
-        environment->entities[i]->position.y = 50;
-        environment->entities[i]->position.z = ((i-6)*20)+10;
-    }
-    for (int i = 8; i < 10; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = 0;
-        environment->entities[i]->position.y = 70;
-        environment->entities[i]->position.z = ((i-8)*20)+10;
-    }
-    for (int i = 10; i < 13; i++)
-    {
-        environment->entities[i] = environment_create_entity(
-        models_create_hexagonal_prism()
-        );
-        environment->entities[i]->position.x = -30;
-        environment->entities[i]->position.y = 30;
-        environment->entities[i]->position.z = ((i-10)*20)+10;
-    }
-    environment->entities[13] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[13]->position.x = 100;
-    environment->entities[13]->position.y = 100;
-    environment->entities[14] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[14]->position.x = 100+15.0;
-    environment->entities[14]->position.y = 100+8.66025403785;
-    environment->entities[15] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[15]->position.x = 100-15.0;
-    environment->entities[15]->position.y = 100+8.66025403785;
-    environment->entities[16] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[16]->position.x = 100-15.0;
-    environment->entities[16]->position.y = 100-8.66025403785;
-    environment->entities[17] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[17]->position.x = 100+15.0;
-    environment->entities[17]->position.y = 100-8.66025403785;
-    environment->entities[18] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[18]->position.x = 100;
-    environment->entities[18]->position.y = 100+17.5;
-    environment->entities[19] = environment_create_entity(
-        models_create_hexagon()
-    );
-    environment->entities[19]->position.x = 100;
-    environment->entities[19]->position.y = 100-17.5;
-    //    environment->entities[20] = environment_create_entity(
-    //        models_create_ground(3)
-    //    );
-    //    environment->entities[20]->position.x = 0.0;
-    //    environment->entities[20]->position.y = 0.0;
-
+    Environment *environment = environment_create_environment(102);
     
+    for (int i = 0; i<10; i++) {
+        for (int j = 0; j<10; j++) {
+            int index = (i*10)+j;
+            environment->entities[index] = environment_create_entity(0, 'p');
+            environment->entities[index]->position.x = (i-5);
+            environment->entities[index]->position.y = j-5;
+            environment->entities[index]->velocity.x = j-5.1;
+            environment->entities[index]->velocity.y = j-5.1;
+            environment->entities[index]->velocity.z = j-5.1;
+            //environment->entities[index]->velocity.y = 10;
+        }
+    }
+    environment->entities[100] = environment_create_entity(
+        models_create_cube(10), 'b'
+    );
+    environment->entities[100]->mass = 1000;
+    environment->entities[100]->fixed = 1;
+    environment->entities[101] = environment_create_entity(
+        models_create_square(10), 'b'
+    );
+    environment->entities[101]->mass = 1;
+    environment->entities[101]->fixed = 1;
+    //environment->entities[0]->velocity.z = 1;
+    //*/
+    //environment->entities[0] = environment_create_entity(0);
+    /*
+    for (int i = 0; i<2; i++) {
+        environment->entities[i] = environment_create_entity(0);
+        environment->entities[i]->position.y = (i-)*2;
+    }
+    */
+    /*
+    environment->entities[0] = environment_create_entity(0);
+    environment->entities[0]->position.y = -10;
+    environment->entities[0]->position.x = -10;
+    environment->entities[1] = environment_create_entity(0);
+    environment->entities[1]->position.y = 10;
+    */
 
 
     int frame = 0;

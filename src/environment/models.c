@@ -229,3 +229,102 @@ Model *models_create_ground(int size)
     return ground;
 }
 */
+
+Model *models_create_cube(int size)
+{
+    // function takes cube sidelength,
+    // but verticies will be size/2 away from the centre
+    size = size/2;
+    
+    Model *cube = malloc(sizeof(Model));
+    // 8 verticies
+    // [-1,-1,-1] 0
+    // [-1, 1,-1] 1
+    // [ 1,-1,-1] 2
+    // [ 1, 1,-1] 3
+    // [-1,-1, 1] 4
+    // [-1, 1, 1] 5
+    // [ 1,-1, 1] 6
+    // [ 1, 1, 1] 7
+
+    // 12 edges
+    // 01 02 32 31 bottom
+    // 45 46 76 75 top
+    // 04 15 26 37 top->bottom
+
+    cube->vertex_count = 8;
+    cube->edge_count = 24;
+
+    cube->verticies = malloc(8*sizeof(Vector));
+    cube->edges = malloc(24*sizeof(int));
+
+    cube->verticies[0] = vector_create(-1*size,-1*size,-1*size);
+    cube->verticies[1] = vector_create(-1*size, size,-1*size);
+    cube->verticies[2] = vector_create( size,-1*size,-1*size);
+    cube->verticies[3] = vector_create( size, size,-1*size);
+    cube->verticies[4] = vector_create(-1*size,-1*size, size);
+    cube->verticies[5] = vector_create(-1*size, size, size);
+    cube->verticies[6] = vector_create( size,-1*size, size);
+    cube->verticies[7] = vector_create( size, size, size);
+
+    int edges[24] = {
+        0,1, // top
+        0,2,
+        3,2,
+        3,1,
+        4,5,
+        4,6,
+        7,6,
+        7,5,
+        0,4,
+        1,5,
+        2,6,
+        3,7
+    };
+    for (int i = 0; i < 24; i++)
+    {
+        cube->edges[i] = edges[i];
+    }
+
+    return cube;
+}
+
+Model *models_create_square(int size)
+{
+    // function takes square sidelength,
+    // but verticies will be size/2 away from the centre
+    size = size/2;
+    
+    Model *square = malloc(sizeof(Model));
+    // 8 verticies
+    // [-1,-1,-0] 0
+    // [-1, 1,-0] 1
+    // [ 1,-1,-0] 2
+    // [ 1, 1,-0] 3
+    // 8
+    // 01 02 32 31 bottom
+
+    square->vertex_count = 4;
+    square->edge_count = 8;
+
+    square->verticies = malloc(4*sizeof(Vector));
+    square->edges = malloc(8*sizeof(int));
+
+    square->verticies[0] = vector_create(-1*size,-1*size,0);
+    square->verticies[1] = vector_create(-1*size, size,0);
+    square->verticies[2] = vector_create( size,-1*size,0);
+    square->verticies[3] = vector_create( size, size,0);
+
+    int edges[8] = {
+        0,1, // top
+        0,2,
+        3,2,
+        3,1,
+    };
+    for (int i = 0; i < 8; i++)
+    {
+        square->edges[i] = edges[i];
+    }
+
+    return square;
+}

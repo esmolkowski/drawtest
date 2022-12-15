@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include <math.h>
 #include <sys/time.h>
+#include <stdbool.h>
 
 long long current_timestamp() {
     struct timeval te; 
@@ -15,7 +16,7 @@ long long current_timestamp() {
     return milliseconds;
 }
 
-void set_velocities(Camera *camera, Properties properties, const Uint8 *keystate, int mx, int my)
+void set_camera_velocities(Camera *camera, Properties properties, const Uint8 *keystate, int mx, int my)
 {
     // forward-back
     if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_S] ) {
@@ -98,7 +99,7 @@ void tick_run(Properties *properties_ptr, Environment *environment) {
         const Uint8 *keystate = SDL_GetKeyboardState(NULL);
         int mx,my;
         SDL_GetRelativeMouseState(&mx, &my);
-        set_velocities(camera, properties, keystate, mx, -1*my);
+        set_camera_velocities(camera, properties, keystate, mx, -1*my);
 
         vector_move_angled(
             &(camera->position),
@@ -111,18 +112,72 @@ void tick_run(Properties *properties_ptr, Environment *environment) {
             camera->strafe_speed*properties.ticktime
         );
         camera->position.z += camera->up_speed*properties.ticktime;
+        // Set ground
+        /*
         if (camera->position.z < 10) {
             camera->position.z = 10;
             camera->up_speed = 0;
         }
+        */
 
-        // move entities
-        for (int i = 0; i < environment->entity_count; i++)
+        // entity tick
+        int entity_count = environment->entity_count;
+        for (int i = 0; i < entity_count; i++)
         {
             Entity *entity = environment->entities[i];
+            // Apply velocities
+            if (entity->position.x < -5 || entity->position.x > 5) {
+                if (entity->position.x < -5) {entity->position.x = -5;}
+                if (entity->position.x > 5) {entity->position.x = 5;}
+                entity->velocity.x = entity->velocity.x*-1;
+            }
             entity->position.x += entity->velocity.x*properties.ticktime;
+            if (entity->position.y < -5 || entity->position.y > 5) {
+                if (entity->position.y < -5) {entity->position.y = -5;}
+                if (entity->position.y > 5) {entity->position.y = 5;}
+                entity->velocity.y = entity->velocity.y*-1;
+            }
             entity->position.y += entity->velocity.y*properties.ticktime;
+            if (entity->position.z < -5 || entity->position.z > 5) {
+                if (entity->position.z < -5) {entity->position.z = -5;}
+                if (entity->position.z > 5) {entity->position.z = 5;}
+                entity->velocity.z = entity->velocity.z*-1;
+            }
             entity->position.z += entity->velocity.z*properties.ticktime;
+            // Apply accelerations
+            entity->velocity.x += entity->acceleration.x*properties.ticktime;
+            entity->velocity.y += entity->acceleration.y*properties.ticktime;
+            entity->velocity.z += entity->acceleration.z*properties.ticktime;
+
+            // calculate interactions
+            for (int j = 0; j < entity_count; j++)
+            {
+                Entity *interaction_entity = environment->entities[j];
+                // don't interact with self
+                if (i != j)
+                {
+                    // find position difference
+                    double dx = interaction_entity->position.x - entity->position.x;
+                    double dy = interaction_entity->position.y - entity->position.y;
+                    double dz = interaction_entity->position.z - entity->position.z;
+
+                    //Vector difference = vector_create(dx,dy,dz);
+                    //double magnitute = vector_magnitute(difference);
+                    double distance = vector_distance(entity->position,interaction_entity->position);
+                    if (distance < .25) {
+                        entity->velocity.x = entity->velocity.x*-1;
+                        entity->velocity.y = entity->velocity.y*-1;
+                        entity->velocity.z = entity->velocity.z*-1;
+                    }
+                    if (distance > 0 && entity->fixed == 0) {
+                        double GRAVITY = 0.0000001;
+                        double mass = interaction_entity->mass;
+                        entity->acceleration.x += mass*GRAVITY*dx/distance;
+                        entity->acceleration.y += mass*GRAVITY*dy/distance;
+                        entity->acceleration.z += mass*GRAVITY*dz/distance;
+                    }
+                }
+            }
         }
     }
 }

@@ -20,6 +20,8 @@ void vector_rotate(Vector *point, Vector rotation);
 
 void vector_move_angled(Vector *pos, double angle, double distance);
 
-double vector_distance(Vector *v1, Vector *v2);
+double vector_distance(Vector v1, Vector v2);
+
+double vector_magnitute(Vector vector);
 
 #endif

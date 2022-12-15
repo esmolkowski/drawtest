@@ -17,6 +17,8 @@ Model *models_create_pyramid();
 Model *models_create_hexagon();
 Model *models_create_hexagonal_prism();
 Model *models_create_sphere();
+Model *models_create_cube(int size);
+Model *models_create_square(int size);
 //Model *models_create_ground(int size);
 
 #endif
