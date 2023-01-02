@@ -2,6 +2,12 @@
 #include "environment/models.h"
 #include "vector.h"
 
+void models_delete(Model *model) {
+    free(model->edges);
+    free(model->verticies);
+    free(model);
+}
+
 Model *models_create_pyramid()
 {
     Model *pyramid = malloc(sizeof(Model));

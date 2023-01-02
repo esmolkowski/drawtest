@@ -1,12 +1,12 @@
 #include <stdlib.h>
 #include "environment/environment.h"
+#include "environment/models.h"
 #include "vector.h"
 
-Environment* environment_create_environment(int entity_count)
+Environment *environment_create_environment()
 {
     Environment *environment = malloc(sizeof(Environment));
-    environment->entity_count = entity_count;
-    environment->entities = malloc(entity_count*sizeof(Entity));
+    environment->entity_count = 0;
 
     environment->camera = malloc(sizeof(Camera));
     environment->camera->position = vector_new();
@@ -20,11 +20,11 @@ Environment* environment_create_environment(int entity_count)
     return environment;
 }
 
-Entity* environment_create_entity(Model *model, char type)
+Entity *entity_create(Model *model, char type)
 {
     Entity *entity = malloc(sizeof(Entity));
     entity->id = 1;
-    entity->type = type;
+    entity->type = type; // m for model, p for point
     entity->model = model;
     entity->position = vector_new();
     entity->velocity = vector_new();
@@ -33,4 +33,33 @@ Entity* environment_create_entity(Model *model, char type)
     entity->angular_velocity = vector_new();
     entity->mass = 1;
     return entity;
+}
+
+void entity_delete(Entity *entity) {
+    // If entity has a model, delete that too
+    if (entity->model != NULL) {
+        models_delete(entity->model);
+    }
+    free(entity);
+}
+
+listNode *environment_add_entity(Environment *environment, Entity *entity) {
+    listNode *node;
+    if (environment->entities == NULL) {
+        environment->entities = linked_list_create(entity);
+        node = environment->entities;
+    } else {
+        node = linked_list_add_node(environment->entities, entity);
+    }
+    return node;
+}
+
+void environment_delete_entity(listNode *node) {
+    // Deletes a given node along with its entity if it has one
+    if (node != NULL) {
+        if (node->data != NULL) {
+            entity_delete(node->data);
+        }
+        linked_list_delete_node(node);
+    }
 }

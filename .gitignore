@@ -74,3 +74,5 @@ _deps
 
 # SDL
 SDL2-2.0.20
+test.c
+todo.txt

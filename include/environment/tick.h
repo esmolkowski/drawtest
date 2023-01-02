@@ -6,5 +6,6 @@
 #include "environment/environment.h"
 
 void tick_run(Properties *properties, Environment *environment);
+void tick_handle_inputs();
 
 #endif

@@ -11,7 +11,7 @@ typedef struct Model {
 } Model;
 
 // destroy a model
-//void models_free(Model *model);
+void models_delete(Model *model);
 
 Model *models_create_pyramid();
 Model *models_create_hexagon();

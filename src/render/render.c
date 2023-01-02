@@ -1,6 +1,7 @@
 #include <math.h>
 #include "SDL.h"
 #include "app.h"
+#include "datastructures/linked_list.h"
 #include "environment/environment.h"
 #include "environment/models.h"
 #include "vector.h"
@@ -119,20 +120,24 @@ void draw_circle(SDL_Renderer *renderer, Properties properties, double cX, doubl
 void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, Environment *environment) {  
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     
-    for (int i = 0; i < environment->entity_count; i++)
+    //for (int i = 0; i < environment->entity_count; i++)
+    listNode *current_node = environment->entities;
+    while (current_node != NULL)
     {
-        Entity *entity = environment->entities[i];
+        //Entity *entity = environment->entities[i];
+        Entity *entity = current_node->data;
         Vector entity_position = (entity->position);
         Vector entity_rotation = (entity->rotation);
         
         Model *model = entity->model;
         
         // If point entity then
-        if (model == 0)
+        if (model == NULL)
         {
             Vector vertex = entity_position;
             vertex = translate_3d(properties, *(environment->camera), vertex);
             draw_offset_point(renderer, properties, vertex.x, vertex.y);
+            draw_circle(renderer, properties, vertex.x, vertex.y, 10);
         } else {
             // rotate and move each vertex in model
             Vector verticies[model->vertex_count];
@@ -168,5 +173,6 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
                 );
             }
         }
+        current_node = current_node->next;
     }
 }
