@@ -9,6 +9,8 @@
 
 listNode *linked_list_create(void *data) {
     listNode *head = malloc(sizeof(listNode));
+    head->previous = NULL;
+    head->next = NULL;
     head->data = data;
 }
 
@@ -29,6 +31,7 @@ listNode *linked_list_add_node(listNode *node, void *data) {
     node->next = newNode;
     newNode->previous = node;
     newNode->data = data;
+    newNode->next = NULL;
     return newNode;
 }
 
