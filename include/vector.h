@@ -24,4 +24,9 @@ double vector_distance(Vector v1, Vector v2);
 
 double vector_magnitute(Vector vector);
 
+typedef struct Vector2d {
+    double x;
+    double y;
+} Vector2d;
+
 #endif

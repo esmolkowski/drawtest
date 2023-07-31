@@ -241,6 +241,59 @@ void draw_circle(SDL_Renderer *renderer, Properties properties, double cX, doubl
     }
 }
 
+void fill_triangle(SDL_Renderer *renderer, Properties properties, Vector2d v1, Vector2d v2, Vector2d v3) {
+    /*
+        Fills in a triangle between three points by drawing vertical lines between:
+            The line between the left point and the right most point.
+        and
+            The line between the left point and the middle point.
+
+        Upon reaching the middle, the 2nd boundary line becomes the line between
+        the middle point and the right point.
+    */
+    
+    // sort vectors by most left and most high
+    Vector2d left, middle, right, t;
+
+    // The current y position and slope of the line between the left and right points
+    double ylr, dlr;
+
+    // The current y position and slope of the line between the left and middle point.
+    // On the 2nd loop this changes to the middle point and the right point.
+    double ym, dm;
+
+    // Sort left to right
+    if (v1.x > v2.x) { t = v1; v1 = v2; v2 = t;}
+    if (v2.x > v3.x) { t = v2; v2 = v3; v3 = t;}
+    if (v1.x > v2.x) { t = v1; v1 = v2; v2 = t;}
+
+    left = v1; middle = v2; right = v3;
+
+    //printf("left: %f,%f middle: %f,%f right: %f,%f\n", left.x, left.y, middle.x, middle.y, right.x, right.y);
+
+    ylr = (double)left.y;
+    dlr = (double)(right.y - left.y) / (double)(right.x - left.x);
+
+    ym = (double)left.y;
+    dm = (double)(middle.y - left.y) / (double)(middle.x - left.x);
+
+    for (int x = left.x; x < middle.x; x++)
+    {
+        draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
+        ylr += dlr;
+        ym += dm;
+    }
+    // Fill middle to right
+    dm = (double)(right.y - middle.y) / (double)(right.x - middle.x);
+    for (int x = middle.x; x < right.x; x++)
+    {
+        draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
+        ylr += dlr;
+        ym += dm;
+    }
+}
+
+
 void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, Environment *environment) {  
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     
@@ -295,4 +348,19 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
         }
         current_node = current_node->next;
     }
+
+    /*
+    // test triangle filling
+    Vector2d v1,v2,v3;
+    v1.x = -50;
+    v1.y = 0;
+    v2.x = -60;
+    v2.y = 50;
+    v3.x = 30;
+    v3.y = 0;
+    //fill_triangle_bottomflat(renderer, properties, v1, v2, v3);
+    //v2.y = -50;
+    //fill_triangle_topflat(renderer, properties, v1, v2, v3);
+    fill_triangle(renderer, properties, v1, v2, v3);
+    */
 }
