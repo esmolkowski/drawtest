@@ -6,11 +6,13 @@
 #include "environment/models.h"
 #include "vector.h"
 #include <stdio.h> 
-#include <stdbool.h> 
+#include <stdbool.h>
+
+#include <stdlib.h>
 
 #define M_PI 3.14159265358979323846
 
-Vector translate_3d(Properties properties, Camera camera, Vector vertex)
+Vector2d translate_3d(Properties properties, Camera camera, Vector vertex)
 {
     double x,y,z,a; // temporary varaibles to do math with
 
@@ -47,15 +49,93 @@ Vector translate_3d(Properties properties, Camera camera, Vector vertex)
 
     y = (vertex.y)/vertex.x * (double)properties.RENDER_WIDTH;
     z = (vertex.z)/vertex.x * (double)properties.RENDER_HEIGHT;
-    vertex.y = z;
-    vertex.x = -y;
+    //vertex.y = z;
+    //vertex.x = -y;
+    Vector2d v;
+    v.x = -y;
+    v.y = z;
 
-    return vertex;
+    //return vertex;
+    return v;
+}
+
+void term_draw_point(int x, int y) {
+    // make x twice as wide for a more square looking display.
+    x = x*2;
+    printf("\x1b[%d;%dH##",y,x);
+}
+
+void draw_point(SDL_Renderer *renderer, Properties properties, int x, int y) {
+    // this should be handled by draw_offline_line?? but it's not working right so
+    // not drawing if out of bounds as a temporary fix.
+    if (abs(x) > properties.RENDER_WIDTH || abs(y) > properties.RENDER_HEIGHT) {
+        return;
+    }
+    if (x < 0 || y < 0) {
+        return;
+    }
+
+    // Draw points
+
+    SDL_RenderDrawPoint(renderer,
+        x, y
+    );
+
+    term_draw_point(x, y);
+}
+
+void draw_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, int x2, int y2) {
+    int low, high;
+    if (x1 == x2) {
+        // vertical line
+        low = y1;
+        high = y2;
+        if (y1 > y2) {
+            low = y2;
+            high = y1;
+        }
+        for (int y = low; y < high; y++)
+        {
+            draw_point(renderer, properties, x1, y);
+        }
+        return;
+    }
+    // Else, calculate lines
+    double m = (double)(y2-y1) / (double)(x2-x1);
+    if (abs(m) < 1) {
+        // draw in standard point slope
+        //y = m(x-x1) + y1
+        low = x1;
+        high = x2;
+        if (x1 > x2) {
+            low = x2;
+            high = x1;
+        }
+        for (int x = low; x < high; x++)
+        {
+            int y = ((int)( m * (x-x1))) + y1;
+            draw_point(renderer, properties, x, y);
+        }
+    } else {
+        // iterate by ys
+        low = y1;
+        high = y2;
+        if (y1 > y2) {
+            low = y2;
+            high = y1;
+        }
+        for (int y = low; y < high; y++)
+        {
+            int x = ((int)((y-y1)/m)) + x1;
+            draw_point(renderer, properties, x, y);
+        }
+    }
 }
 
 void draw_offset_point(SDL_Renderer *renderer, Properties properties, int x, int y)
 {
-    SDL_RenderDrawPoint(renderer,
+    //term_draw_point(x+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y);
+    draw_point(renderer, properties,
         x+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y
     );
 }
@@ -202,11 +282,25 @@ void draw_offset_line(SDL_Renderer *renderer, Properties properties, int x1, int
         
         SDL Origin : x = width/2, y = height/2
     */
-    SDL_RenderDrawLine(renderer,
+    // SDL_RenderDrawLine(renderer,
+    //     x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1,
+    //     x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2
+    // );
+    // term_draw_line(renderer, properties,
+    //     x1, y1,
+    //     x2, y2
+    // );
+    //term_draw_point(x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1);
+    //term_draw_point(x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2);
+    draw_line(renderer, properties,
         x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1,
         x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2
     );
 }
+
+//void term_draw_line(int x1, int y1, int x2, int y2) {
+//
+//}
 
 void draw_circle(SDL_Renderer *renderer, Properties properties, double cX, double cY, double radius)
 {
@@ -251,6 +345,12 @@ void fill_triangle(SDL_Renderer *renderer, Properties properties, Vector2d v1, V
         Upon reaching the middle, the 2nd boundary line becomes the line between
         the middle point and the right point.
     */
+
+    // Show wireframe underneath polygon filling for cool glitch effect.
+    draw_offset_line(renderer,properties, v1.x, v1.y, v2.x, v2.y);
+    draw_offset_line(renderer,properties, v2.x, v2.y, v3.x, v3.y);
+    draw_offset_line(renderer,properties, v3.x, v3.y, v1.x, v1.y);
+
     
     // sort vectors by most left and most high
     Vector2d left, middle, right, t;
@@ -277,26 +377,41 @@ void fill_triangle(SDL_Renderer *renderer, Properties properties, Vector2d v1, V
     ym = (double)left.y;
     dm = (double)(middle.y - left.y) / (double)(middle.x - left.x);
 
-    for (int x = left.x; x < middle.x; x++)
-    {
-        draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
-        ylr += dlr;
-        ym += dm;
-    }
-    // Fill middle to right
-    dm = (double)(right.y - middle.y) / (double)(right.x - middle.x);
-    for (int x = middle.x; x < right.x; x++)
-    {
-        draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
-        ylr += dlr;
-        ym += dm;
+    if (abs(middle.x-left.x) > 2) {
+        for (int x = left.x; x < middle.x; x++)
+        {
+            draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
+            ylr += dlr;
+            ym += dm;
+        }
+        // Fill middle to right
+        dm = (double)(right.y - middle.y) / (double)(right.x - middle.x);
+        for (int x = middle.x; x < right.x; x++)
+        {
+            draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
+            ylr += dlr;
+            ym += dm;
+        }
+    } else {
+        // approximate that left.x == middle.x
+        // and fill starting at two points rather than diverging from a single
+        ym = (double)middle.y;
+        dm = (double)(right.y - middle.y) / (double)(right.x - left.x);
+        for (int x = left.x; x < right.x; x++)
+        {
+            draw_offset_line(renderer,properties, x, (int)ylr, x, (int)ym);
+            ylr += dlr;
+            ym += dm;
+        }
     }
 }
 
 
 void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, Environment *environment) {  
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-    
+
+    //draw_offset_line(renderer, properties, -10,-10,10,50);
+
     listNode *current_node = environment->entities;
     while (current_node != NULL)
     {
@@ -305,17 +420,61 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
         Vector entity_rotation = (entity->rotation);
         
         Model *model = entity->model;
+        pModel *pmodel = entity->pmodel;
+        char type = entity->type;
+        Color color = entity->color;
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
         
         // If point entity then
-        if (model == NULL)
+        if (type == '.')
         {
-            Vector vertex = entity_position;
-            vertex = translate_3d(properties, *(environment->camera), vertex);
+            Vector pos = entity_position;
+            Vector2d vertex = translate_3d(properties, *(environment->camera), pos);
             draw_offset_point(renderer, properties, vertex.x, vertex.y);
-            draw_circle(renderer, properties, vertex.x, vertex.y, 10);
+            double d = vector_distance(pos, environment->camera->position);
+            //double r = 100/((sqrt(d))+0.1);
+            double r = 1.0/((d*d)/40000);
+            //printf("%f %f\n",d,r);
+            draw_circle(renderer, properties, vertex.x, vertex.y, r);
+        } else if (type == 'p') {
+            for (int i = 0; i < pmodel->tri_count; i++)
+            {
+                int r = color.r-50+(rand() % 50);
+                int g = color.r-50+(rand() % 50);
+                int b = color.r-50+(rand() % 50);
+                SDL_SetRenderDrawColor(renderer, color.r,g,0, 255);
+
+                Vector v1 = pmodel->tris[i].v1;
+                Vector v2 = pmodel->tris[i].v2;
+                Vector v3 = pmodel->tris[i].v3;
+
+                v1.x += entity_position.x;
+                v1.y += entity_position.y;
+                v1.z += entity_position.z;
+                v2.x += entity_position.x;
+                v2.y += entity_position.y;
+                v2.z += entity_position.z;
+                v3.x += entity_position.x;
+                v3.y += entity_position.y;
+                v3.z += entity_position.z;
+
+                vector_rotate(&v1, entity_rotation);
+                vector_rotate(&v2, entity_rotation);
+                vector_rotate(&v3, entity_rotation);
+
+                Vector2d vf1 = translate_3d(properties, *(environment->camera), v1);
+                Vector2d vf2 = translate_3d(properties, *(environment->camera), v2);
+                Vector2d vf3 = translate_3d(properties, *(environment->camera), v3);
+
+                fill_triangle(renderer, properties, vf1, vf2, vf3);
+                //printf("hello i: %d | %f,%f %f,%f %f,%f\n\n", i, vf1.x, vf1.y, vf2.x, vf2.y, vf3.x, vf3.y);
+                //printf("hello1 i: %d | %d,%d,%d\n", i, v1.x, v2.x, v3.x);
+                //printf("hello2 i: %d | %f,%f,%f\n\n", i, vf1.x, vf2.x, vf3.x);
+                //break;
+            }
         } else {
             // rotate and move each vertex in model
-            Vector verticies[model->vertex_count];
+            Vector2d verticies[model->vertex_count];
             for (int i = 0; i < model->vertex_count; i++)
             {
                 // rotate first
@@ -336,8 +495,8 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
             for (int j = 0; j < model->edge_count; j=j+2)
             {
 
-                Vector v1 = verticies[model->edges[j]];
-                Vector v2 = verticies[model->edges[j+1]];
+                Vector2d v1 = verticies[model->edges[j]];
+                Vector2d v2 = verticies[model->edges[j+1]];
 
                 // draw with offset to be centered
                 draw_offset_line(renderer, properties,

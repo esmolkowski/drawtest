@@ -9,22 +9,47 @@
 #include "environment/models.h"
 #include "render/render.h"
 #include "vector.h"
+#include <unistd.h>
+
+#include <time.h> // nanosleep
+#include <sys/time.h> // timeval
+
+//printf("meow");
+//printf("\x1b[2J\x1b[10;10Hmeow");
 // WINDOWS
 //#include <windows.h>
+
+// TODO: Move to its own header
+unsigned long timestamp() {
+    struct timeval t;
+    gettimeofday(&t,NULL);
+    return t.tv_usec;
+}
+
 
 //int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevIns, LPSTR lpszArgument, int iShow)
 int main(int argc, char *argv[])
 {
+    // 2J clears entire screen
+    // printf("\x1b[2J\x1b[10;10Hmeowooo\x1b[15;12Hmeow");
+    // fflush(stdout);
+
     Properties properties;
-    properties.RENDER_WIDTH = 320;
-    properties.RENDER_HEIGHT = 240;
-    properties.RENDER_HALF_WIDTH = 320/2;
-    properties.RENDER_HALF_HEIGHT = 240/2;
-    properties.WINDOW_SCALE = 2.0;
+    properties.RENDER_WIDTH = 50;//320;
+    properties.RENDER_HEIGHT = 50;//240;
+    properties.RENDER_HALF_WIDTH = properties.RENDER_WIDTH/2;
+    properties.RENDER_HALF_HEIGHT = properties.RENDER_HEIGHT/2;
+    properties.WINDOW_SCALE = 10.0;
 
     // used for FPS tracking
     properties.previous_frame = 0;
     properties.previous_tick = 0;
+
+    // Set target fps and frametime (microseconds)
+    properties.target_fps = 60;
+    properties.target_frametime = 1000000/properties.target_fps;
+
+    properties.camera_rotate_speed = 1;
     
     properties.tickrate = 64;
     properties.ticktime = 1.0/((float)properties.tickrate);
@@ -49,12 +74,33 @@ int main(int argc, char *argv[])
 
     // Set up demo environment
     Environment *environment = environment_create_environment();
-    environment_add_entity(environment, entity_create(
-        models_create_pyramid(10), 'm'
-    ));
+    
+    Entity *pyramid = environment_add_entity(environment, entity_create(
+        models_create_pyramid(10), NULL, 'w', color(253,166,58)
+    ))->data;
+    pyramid->position = vector_create(-20,-10,-10);
+    pyramid->velocity.z = 1;
+    pyramid->angular_velocity.y = .1;
+    Entity *hex = environment_add_entity(environment, entity_create(
+        models_create_hexagonal_prism(), NULL, 'w', color(255,90,0)
+    ))->data;
+    hex->angular_velocity = vector_create(1,0,0);
+    hex->position = vector_create(30,50,-10);
     listNode *ent2 = environment_add_entity(environment, entity_create(
-        models_create_cube(200), 'm'
+        models_create_cube(200), NULL, 'w', color(255,255,0)
     ));
+    Entity *ent = environment_add_entity(environment, entity_create(
+        NULL, pmodels_create_tetrahedron(), 'p', color(255,255,0)
+    ))->data;
+    ent->position = vector_create(10,10,10);
+    ent->angular_velocity = vector_create(2,2,0);
+
+    Entity *ent1 = environment_add_entity(environment, entity_create(
+        NULL, pmodels_create_tetrahedron(), 'p', color(0,255,0)
+    ))->data;
+    ent1->position = vector_create(-50,10,-30);
+    ent1->angular_velocity = vector_create(2,.5,1);
+    
 
     int frame = 0;
     while (true)
@@ -76,10 +122,22 @@ int main(int argc, char *argv[])
 
         tick_run(&properties, environment);
 
-        uint32_t frametime = SDL_GetTicks()-properties.previous_frame;
-        //printf("FRAMETIME: %d FPS:%lf\n",frametime,1000*(1.0/(double)frametime));
+        unsigned long frametime = timestamp()-properties.previous_frame;
+
+        if (properties.target_frametime > frametime) {
+            // get time delta in microseconds
+            unsigned long d = properties.target_frametime - frametime;
+            // convert microseconds to nanoseconds
+            struct timespec remaining, request = { 0, d*1000 };
+            nanosleep(&request, &remaining);
+        }
+
+        // draw frame
+        printf("\x1b[2J");
         render_drawframe(renderer, frame, properties, environment);
-        properties.previous_frame = SDL_GetTicks();
+        fflush(stdout);
+
+        properties.previous_frame = timestamp();
         frame++;
 
         SDL_RenderPresent(renderer);

@@ -6,11 +6,18 @@
 #include "environment/models.h"
 #include "datastructures/linked_list.h"
 
+typedef struct Color {
+    int r;
+    int g;
+    int b;
+} Color;
+
 typedef struct Entity {
     int id;
     char type;
 
     Model *model;
+    pModel *pmodel;
 
     Vector position;
     Vector velocity;
@@ -18,6 +25,8 @@ typedef struct Entity {
 
     Vector rotation;
     Vector angular_velocity;
+
+    Color color;
 
     bool fixed;
     float mass;
@@ -49,8 +58,9 @@ typedef struct Environment {
 
 Environment *environment_create_environment();
 void environment_delete_entity(listNode *node);
-Entity *entity_create(Model *model, char type);
+Entity *entity_create(Model *model, pModel *pmodel, char type, Color color);
 listNode *environment_add_entity(Environment *environment, Entity *entity);
 void entity_delete(Entity *entity);
+Color color(int r, int g, int b);
 
 #endif

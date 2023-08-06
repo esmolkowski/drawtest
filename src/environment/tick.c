@@ -34,9 +34,8 @@ void tick_handle_inputs(Environment *environment, Properties properties, SDL_Eve
                     //     ));
                     //     environment_delete_entity(ent);
                     // }
-                    
                     listNode *projectile_node = environment_add_entity(environment, entity_create(
-                        NULL, 'p'
+                        NULL, NULL, '.', color(255,255,0)
                     ));
                     Entity *projectile = projectile_node->data;
                     Camera *camera = environment->camera;
@@ -101,21 +100,21 @@ void set_camera_velocities(Camera *camera, Properties properties, const Uint8 *k
     if (keystate[SDL_SCANCODE_RIGHT] || keystate[SDL_SCANCODE_LEFT] ) {
         if (keystate[SDL_SCANCODE_RIGHT])
         {
-            camera->rotation.x -= 3.14159265359*properties.ticktime;
+            camera->rotation.x -= 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
         }
         if (keystate[SDL_SCANCODE_LEFT])
         {
-            camera->rotation.x += 3.14159265359*properties.ticktime;
+            camera->rotation.x += 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
         }
     }
     if (keystate[SDL_SCANCODE_UP] || keystate[SDL_SCANCODE_DOWN] ) {
         if (keystate[SDL_SCANCODE_UP])
         {
-            camera->rotation.y -= 3.14159265359*properties.ticktime;
+            camera->rotation.y -= 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
         }
         if (keystate[SDL_SCANCODE_DOWN])
         {
-            camera->rotation.y += 3.14159265359*properties.ticktime;
+            camera->rotation.y += 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
         }
     }
     //camera->phi += 0.39269908169*properties.ticktime*(mx*.25);
@@ -187,7 +186,10 @@ void tick_run(Properties *properties_ptr, Environment *environment) {
                 entity->velocity.z = entity->velocity.z*-1;
             }
             entity->position.z += entity->velocity.z*properties.ticktime;
-            //
+            
+            entity->rotation.x += entity->angular_velocity.x*properties.ticktime;
+            entity->rotation.y += entity->angular_velocity.y*properties.ticktime;
+            entity->rotation.z += entity->angular_velocity.z*properties.ticktime;
 
             // Apply accelerations
             entity->velocity.x += entity->acceleration.x*properties.ticktime;

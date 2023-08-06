@@ -11,9 +11,15 @@ typedef struct Properties {
     int RENDER_HALF_WIDTH;
     int RENDER_HALF_HEIGHT;
 
-    float WINDOW_SCALE;
+    int target_fps;
+    int target_frametime;
 
-    uint32_t previous_frame;
+    float WINDOW_SCALE;
+    
+    float camera_rotate_speed;
+
+    unsigned long previous_frame;
+    // TODO: update ticks to be non sdl
     uint32_t previous_tick;
     int tickrate;
     float ticktime;

@@ -20,18 +20,28 @@ Environment *environment_create_environment()
     return environment;
 }
 
-Entity *entity_create(Model *model, char type)
+Color color(int r, int g, int b) {
+    Color c;
+    c.r = r;
+    c.g = g;
+    c.b = b;
+    return c;
+}
+
+Entity *entity_create(Model *model, pModel *pmodel, char type, Color color)
 {
     Entity *entity = malloc(sizeof(Entity));
     entity->id = 1;
-    entity->type = type; // m for model, p for point
+    entity->type = type; // m for model, p for pmodel, . for point
     entity->model = model;
+    entity->pmodel = pmodel;
     entity->position = vector_new();
     entity->velocity = vector_new();
     entity->acceleration = vector_new();
     entity->rotation = vector_new();
     entity->angular_velocity = vector_new();
     entity->mass = 1;
+    entity->color = color;
     return entity;
 }
 
