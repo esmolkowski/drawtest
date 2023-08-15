@@ -8,6 +8,9 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdbool.h>
+#include "interfaces/inputs.h"
+
+#define M_PI 3.14159265358979323846
 
 long long current_timestamp() {
     struct timeval te; 
@@ -17,7 +20,7 @@ long long current_timestamp() {
     return milliseconds;
 }
 
-void tick_handle_inputs(Environment *environment, Properties properties, SDL_Event event) {
+void tick_handle_inputs(Environment *environment, Properties *properties, SDL_Event event) {
     //SDL_Event event =;
     switch( event.type ) {
         case SDL_KEYDOWN:
@@ -58,103 +61,73 @@ void tick_handle_inputs(Environment *environment, Properties properties, SDL_Eve
     }
 }
 
-void set_camera_velocities(Camera *camera, Properties properties, const Uint8 *keystate, int mx, int my)
+void set_camera_velocities(Camera *camera, Properties *properties)
 {
+    InputActions inputs = interface_get_inputs();
     // forward-back
-    if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_S] ) {
-        if (keystate[SDL_SCANCODE_W])
-        {
-            camera->forward_speed = 50;
-        }
-        if (keystate[SDL_SCANCODE_S])
-        {
-            camera->forward_speed = -50;
-        }
-    } else {
-        camera->forward_speed = 0.0;
+    camera->forward_speed = 0;
+    camera->strafe_speed = 0;
+    camera->up_speed = 0;
+    if ( inputs.forward ) { camera->forward_speed += 50; }
+    if ( inputs.backward ) { camera->forward_speed += -50; }
+    if ( inputs.strafe_left ) { camera->strafe_speed += 50; }
+    if ( inputs.strafe_right ) { camera->strafe_speed += -50; }
+    if ( inputs.rise ) { camera->up_speed += 30; }
+    if ( inputs.fall ) { camera->up_speed += -30; }
+
+    // TODO: add angular velocities to camera
+    if (inputs.right)
+    {
+        camera->rotation.x -= 3.14159265359*properties->ticktime*properties->camera_rotate_speed;
     }
-    if (keystate[SDL_SCANCODE_A] || keystate[SDL_SCANCODE_D] ) {
-        if (keystate[SDL_SCANCODE_A])
-        {
-            camera->strafe_speed = 50.0;
-        }
-        if (keystate[SDL_SCANCODE_D])
-        {
-            camera->strafe_speed = -50.0;
-        }
-    } else {
-        camera->strafe_speed = 0.0;
+    if (inputs.left)
+    {
+        camera->rotation.x += 3.14159265359*properties->ticktime*properties->camera_rotate_speed;
     }
-    if (keystate[SDL_SCANCODE_SPACE] || keystate[SDL_SCANCODE_LSHIFT] ) {
-        if (keystate[SDL_SCANCODE_SPACE])
-        {
-            camera->up_speed = 30.0;
-        }
-        if (keystate[SDL_SCANCODE_LSHIFT])
-        {
-            camera->up_speed = -30.0;
-        }
-    } else {
-        camera->up_speed = 0.0*properties.ticktime;
+
+    if (inputs.up)
+    {
+        camera->rotation.y -= 3.14159265359*properties->ticktime*properties->camera_rotate_speed;
     }
-    if (keystate[SDL_SCANCODE_RIGHT] || keystate[SDL_SCANCODE_LEFT] ) {
-        if (keystate[SDL_SCANCODE_RIGHT])
-        {
-            camera->rotation.x -= 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
-        }
-        if (keystate[SDL_SCANCODE_LEFT])
-        {
-            camera->rotation.x += 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
-        }
+    if (inputs.down)
+    {
+        camera->rotation.y += 3.14159265359*properties->ticktime*properties->camera_rotate_speed;
     }
-    if (keystate[SDL_SCANCODE_UP] || keystate[SDL_SCANCODE_DOWN] ) {
-        if (keystate[SDL_SCANCODE_UP])
-        {
-            camera->rotation.y -= 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
-        }
-        if (keystate[SDL_SCANCODE_DOWN])
-        {
-            camera->rotation.y += 3.14159265359*properties.ticktime*properties.camera_rotate_speed;
-        }
-    }
-    //camera->phi += 0.39269908169*properties.ticktime*(mx*.25);
-    //camera->theta += 0.39269908169*properties.ticktime*(my*.25);
+
+    //camera->phi += 0.39269908169*properties->ticktime*(mx*.25);
+    //camera->theta += 0.39269908169*properties->ticktime*(my*.25);
     //printf("%d,%d\n",mx,my);
 }
 
-void tick_run(Properties *properties_ptr, Environment *environment) {
+void tick_run(Properties *properties, Environment *environment) {
     // ticktime is seconds per tick
-    Properties properties = *properties_ptr;
-    uint32_t deltaT = SDL_GetTicks()-properties.previous_tick;
-    if (deltaT >= properties.ticktime*1000)
+    uint32_t deltaT = SDL_GetTicks()-properties->previous_tick;
+    if (deltaT >= properties->ticktime*1000)
     {
-        properties_ptr->previous_tick = SDL_GetTicks();
-        //printf("%lld, %u, %f\n",current_timestamp(),deltaT,properties.ticktime);
+        properties->previous_tick = SDL_GetTicks();
+        //printf("%lld, %u, %f\n",current_timestamp(),deltaT,properties->ticktime);
         // move camera
         Camera *camera = environment->camera;
 
         // give camera gravity
-        //camera->up_speed += -2*properties.ticktime;
+        //camera->up_speed += -2*properties->ticktime;
         //printf("%lf\n",camera->up_speed);
 
-        SDL_PumpEvents();
-        const Uint8 *keystate = SDL_GetKeyboardState(NULL);
-        int mx,my;
-        SDL_GetRelativeMouseState(&mx, &my);
         // TODO: move to more generalized function for movement related keys rather than just camera
-        set_camera_velocities(camera, properties, keystate, mx, -1*my);
+        set_camera_velocities(camera, properties);
 
+        // Move camera in space
         vector_move_angled(
             &(camera->position),
             camera->rotation.x,
-            camera->forward_speed*properties.ticktime
+            camera->forward_speed*properties->ticktime
         );
         vector_move_angled(
             &(camera->position),
             camera->rotation.x + 1.57079632679,
-            camera->strafe_speed*properties.ticktime
+            camera->strafe_speed*properties->ticktime
         );
-        camera->position.z += camera->up_speed*properties.ticktime;
+        camera->position.z += camera->up_speed*properties->ticktime;
 
         // entity tick
         //int entity_count = environment->entity_count;
@@ -173,28 +146,28 @@ void tick_run(Properties *properties_ptr, Environment *environment) {
                 if (entity->position.x > WORLD_SIZE) {entity->position.x = WORLD_SIZE;}
                 entity->velocity.x = entity->velocity.x*-1;
             }
-            entity->position.x += entity->velocity.x*properties.ticktime;
+            entity->position.x += entity->velocity.x*properties->ticktime;
             if (entity->position.y < -WORLD_SIZE || entity->position.y > WORLD_SIZE) {
                 if (entity->position.y < -WORLD_SIZE) {entity->position.y = -WORLD_SIZE;}
                 if (entity->position.y > WORLD_SIZE) {entity->position.y = WORLD_SIZE;}
                 entity->velocity.y = entity->velocity.y*-1;
             }
-            entity->position.y += entity->velocity.y*properties.ticktime;
+            entity->position.y += entity->velocity.y*properties->ticktime;
             if (entity->position.z < -WORLD_SIZE || entity->position.z > WORLD_SIZE) {
                 if (entity->position.z < -WORLD_SIZE) {entity->position.z = -WORLD_SIZE;}
                 if (entity->position.z > WORLD_SIZE) {entity->position.z = WORLD_SIZE;}
                 entity->velocity.z = entity->velocity.z*-1;
             }
-            entity->position.z += entity->velocity.z*properties.ticktime;
+            entity->position.z += entity->velocity.z*properties->ticktime;
             
-            entity->rotation.x += entity->angular_velocity.x*properties.ticktime;
-            entity->rotation.y += entity->angular_velocity.y*properties.ticktime;
-            entity->rotation.z += entity->angular_velocity.z*properties.ticktime;
+            entity->rotation.x += entity->angular_velocity.x*properties->ticktime;
+            entity->rotation.y += entity->angular_velocity.y*properties->ticktime;
+            entity->rotation.z += entity->angular_velocity.z*properties->ticktime;
 
             // Apply accelerations
-            entity->velocity.x += entity->acceleration.x*properties.ticktime;
-            entity->velocity.y += entity->acceleration.y*properties.ticktime;
-            entity->velocity.z += entity->acceleration.z*properties.ticktime;
+            entity->velocity.x += entity->acceleration.x*properties->ticktime;
+            entity->velocity.y += entity->acceleration.y*properties->ticktime;
+            entity->velocity.z += entity->acceleration.z*properties->ticktime;
 
             // calculate interactions
             // not functional after move to LL for entities

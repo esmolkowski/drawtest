@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
     Entity *hex = environment_add_entity(environment, entity_create(
         models_create_hexagonal_prism(), NULL, 'w', color(255,90,0)
     ))->data;
-    hex->angular_velocity = vector_create(1,0,0);
+    hex->angular_velocity = vector_create(1,.1,-.3);
     hex->position = vector_create(30,50,-10);
     listNode *ent2 = environment_add_entity(environment, entity_create(
         models_create_cube(200), NULL, 'w', color(255,255,0)
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
         Camera *camera = environment->camera;
         if (SDL_PollEvent(&event))
         {
-            tick_handle_inputs(environment, properties, event);
+            tick_handle_inputs(environment, &properties, event);
             // Seperate check for quit
             if (event.type == SDL_QUIT)
             {
