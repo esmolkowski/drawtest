@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include "environment/models.h"
 
+typedef struct Time {
+    unsigned long seconds;
+    unsigned long microseconds;
+} Time;
+
 typedef struct Properties {
     int RENDER_WIDTH;
     int RENDER_HEIGHT;
@@ -23,6 +28,8 @@ typedef struct Properties {
     uint32_t previous_tick;
     int tickrate;
     float ticktime;
+
+    Time start_time;
 } Properties;
 
 #endif

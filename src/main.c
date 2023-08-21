@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "app.h"
+#include "interfaces/timing.h"
 #include "datastructures/linked_list.h"
 #include "environment/environment.h"
 #include "environment/tick.h"
@@ -53,6 +54,8 @@ int main(int argc, char *argv[])
     
     properties.tickrate = 64;
     properties.ticktime = 1.0/((float)properties.tickrate);
+
+    properties.start_time = interface_get_epoch_time();
 
 
     SDL_Init(SDL_INIT_VIDEO);
@@ -133,9 +136,11 @@ int main(int argc, char *argv[])
         }
 
         // draw frame
-        printf("\x1b[2J");
+        //printf("\x1b[2J");
         render_drawframe(renderer, frame, properties, environment);
-        fflush(stdout);
+        //fflush(stdout);
+
+        printf("%lu\n", interface_get_milliseconds(&properties));
 
         properties.previous_frame = timestamp();
         frame++;

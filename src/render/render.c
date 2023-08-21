@@ -62,7 +62,7 @@ Vector2d translate_3d(Properties properties, Camera camera, Vector vertex)
 void term_draw_point(int x, int y) {
     // make x twice as wide for a more square looking display.
     x = x*2;
-    printf("\x1b[%d;%dH##",y,x);
+    //printf("\x1b[%d;%dH##",y,x);
 }
 
 void draw_point(SDL_Renderer *renderer, Properties properties, int x, int y) {
