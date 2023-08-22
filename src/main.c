@@ -15,26 +15,15 @@
 #include <time.h> // nanosleep
 #include <sys/time.h> // timeval
 
-//printf("meow");
-//printf("\x1b[2J\x1b[10;10Hmeow");
+// TODO: Change everything to fixed size types
+
 // WINDOWS
 //#include <windows.h>
-
-// TODO: Move to its own header
-unsigned long timestamp() {
-    struct timeval t;
-    gettimeofday(&t,NULL);
-    return t.tv_usec;
-}
-
 
 //int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevIns, LPSTR lpszArgument, int iShow)
 int main(int argc, char *argv[])
 {
-    // 2J clears entire screen
-    // printf("\x1b[2J\x1b[10;10Hmeowooo\x1b[15;12Hmeow");
-    // fflush(stdout);
-
+    // Initialize app properties before loop
     Properties properties;
     properties.RENDER_WIDTH = 50;//320;
     properties.RENDER_HEIGHT = 50;//240;
@@ -103,29 +92,28 @@ int main(int argc, char *argv[])
     ))->data;
     ent1->position = vector_create(-50,10,-30);
     ent1->angular_velocity = vector_create(2,.5,1);
-    
+    // end of demo environment setup
 
     int frame = 0;
     while (true)
     {
-        SDL_Event event;
-        Camera *camera = environment->camera;
-        if (SDL_PollEvent(&event))
+        // Get inputs
+        InputActions inputs = interface_get_inputs();
+        properties.inputs = &inputs;
+
+        if (properties.inputs->quit)
         {
-            tick_handle_inputs(environment, &properties, event);
-            // Seperate check for quit
-            if (event.type == SDL_QUIT)
-            {
-                break;
-            }
+            break;
         }
+        tick_handle_inputs(environment, &properties);
+
         // draw frame
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
         tick_run(&properties, environment);
 
-        unsigned long frametime = timestamp()-properties.previous_frame;
+        unsigned long frametime = interface_get_epoch_microseconds()-properties.previous_frame;
 
         if (properties.target_frametime > frametime) {
             // get time delta in microseconds
@@ -140,9 +128,7 @@ int main(int argc, char *argv[])
         render_drawframe(renderer, frame, properties, environment);
         //fflush(stdout);
 
-        printf("%lu\n", interface_get_milliseconds(&properties));
-
-        properties.previous_frame = timestamp();
+        properties.previous_frame = interface_get_epoch_microseconds();
         frame++;
 
         SDL_RenderPresent(renderer);

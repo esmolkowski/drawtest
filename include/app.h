@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "environment/models.h"
+#include "interfaces/inputs.h"
 
 typedef struct Time {
     unsigned long seconds;
@@ -30,6 +31,8 @@ typedef struct Properties {
     float ticktime;
 
     Time start_time;
+
+    InputActions *inputs;
 } Properties;
 
 #endif

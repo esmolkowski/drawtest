@@ -4,39 +4,18 @@
 #include "vector.h"
 #include "datastructures/linked_list.h"
 #include "environment/environment.h"
-#include "SDL.h"
 #include <math.h>
 #include <sys/time.h>
 #include <stdbool.h>
 #include "interfaces/inputs.h"
+#include "interfaces/timing.h"
 
 #define M_PI 3.14159265358979323846
 
-long long current_timestamp() {
-    struct timeval te; 
-    gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // calculate milliseconds
-    // printf("milliseconds: %lld\n", milliseconds);
-    return milliseconds;
-}
-
-void tick_handle_inputs(Environment *environment, Properties *properties, SDL_Event event) {
-    //SDL_Event event =;
-    switch( event.type ) {
-        case SDL_KEYDOWN:
-            switch( event.key.keysym.sym ) {
-                case SDLK_e:
-                    // printf("aaaaaaaaaa\n");
-                    // // test deleting 2nd entity in environment
-                    // listNode *node = environment->entities->next;
-                    // environment_delete_entity(node);
-                    // for (size_t i = 0; i < 1000000; i++)
-                    // {
-                    //     listNode *ent = environment_add_entity(environment, entity_create(
-                    //         models_create_hexagonal_prism(10), 'm'
-                    //     ));
-                    //     environment_delete_entity(ent);
-                    // }
+void tick_handle_inputs(Environment *environment, Properties *properties) {
+    // TODO: Re-add projectile shooting :)
+    /*
+                    // Fire projectile
                     listNode *projectile_node = environment_add_entity(environment, entity_create(
                         NULL, NULL, '.', color(255,255,0)
                     ));
@@ -59,11 +38,12 @@ void tick_handle_inputs(Environment *environment, Properties *properties, SDL_Ev
         default:
             break;
     }
+    */
 }
 
 void set_camera_velocities(Camera *camera, Properties *properties)
 {
-    InputActions inputs = interface_get_inputs();
+    InputActions inputs = *(properties->inputs);
     // forward-back
     camera->forward_speed = 0;
     camera->strafe_speed = 0;
@@ -93,25 +73,17 @@ void set_camera_velocities(Camera *camera, Properties *properties)
     {
         camera->rotation.y += 3.14159265359*properties->ticktime*properties->camera_rotate_speed;
     }
-
-    //camera->phi += 0.39269908169*properties->ticktime*(mx*.25);
-    //camera->theta += 0.39269908169*properties->ticktime*(my*.25);
-    //printf("%d,%d\n",mx,my);
 }
 
 void tick_run(Properties *properties, Environment *environment) {
     // ticktime is seconds per tick
-    uint32_t deltaT = SDL_GetTicks()-properties->previous_tick;
+    uint32_t deltaT = interface_get_milliseconds(properties)-properties->previous_tick;
     if (deltaT >= properties->ticktime*1000)
     {
-        properties->previous_tick = SDL_GetTicks();
-        //printf("%lld, %u, %f\n",current_timestamp(),deltaT,properties->ticktime);
+        properties->previous_tick = interface_get_milliseconds(properties);
+
         // move camera
         Camera *camera = environment->camera;
-
-        // give camera gravity
-        //camera->up_speed += -2*properties->ticktime;
-        //printf("%lf\n",camera->up_speed);
 
         // TODO: move to more generalized function for movement related keys rather than just camera
         set_camera_velocities(camera, properties);

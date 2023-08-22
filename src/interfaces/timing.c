@@ -23,6 +23,7 @@ unsigned long interface_get_epoch_microseconds()
 }
 
 // Returns the number of milliseconds since the program was started
+// Debating if it would be more efficient to just do physics in microseconds.
 unsigned long interface_get_milliseconds(Properties *properties)
 {
     // I think there may be a bug here that causes a segfault
