@@ -389,37 +389,34 @@ void render_drawframe(Renderer *renderer, int frame, Properties properties, Envi
             //printf("%f %f\n",d,r);
             draw_circle(renderer, properties, vertex.x, vertex.y, r);
         } else if (type == 'p') {
-            for (int i = 0; i < pmodel->tri_count; i++)
+            // set funny colors
+            int r = color.r-50+(rand() % 50);
+            int g = color.r-50+(rand() % 50);
+            int b = color.r-50+(rand() % 50);
+            renderer_set_color(renderer, color.r,g,0, 255);
+            // render polygonal model
+            // translate all of the verticies and then fill in the polygons
+            Vector2d *translated_verticies = malloc(pmodel->vertex_count*sizeof(Vector2d));
+            for (int i = 0; i< pmodel->vertex_count; i++)
             {
-                int r = color.r-50+(rand() % 50);
-                int g = color.r-50+(rand() % 50);
-                int b = color.r-50+(rand() % 50);
-                renderer_set_color(renderer, color.r,g,0, 255);
+                Vector v = pmodel->verticies[i];
+                vector_rotate(&v, entity_rotation);
 
-                Vector v1 = pmodel->tris[i].v1;
-                Vector v2 = pmodel->tris[i].v2;
-                Vector v3 = pmodel->tris[i].v3;
+                // TODO: convert this func to pointer input
+                v.x += entity_position.x;
+                v.y += entity_position.y;
+                v.z += entity_position.z;
 
-                v1.x += entity_position.x;
-                v1.y += entity_position.y;
-                v1.z += entity_position.z;
-                v2.x += entity_position.x;
-                v2.y += entity_position.y;
-                v2.z += entity_position.z;
-                v3.x += entity_position.x;
-                v3.y += entity_position.y;
-                v3.z += entity_position.z;
-
-                vector_rotate(&v1, entity_rotation);
-                vector_rotate(&v2, entity_rotation);
-                vector_rotate(&v3, entity_rotation);
-
-                Vector2d vf1 = translate_3d(properties, *(environment->camera), v1);
-                Vector2d vf2 = translate_3d(properties, *(environment->camera), v2);
-                Vector2d vf3 = translate_3d(properties, *(environment->camera), v3);
-
-                fill_triangle(renderer, properties, vf1, vf2, vf3);
+                translated_verticies[i] = translate_3d(properties, *(environment->camera), v);
             }
+            for (int i = 0; i < pmodel->face_count; i++)
+            {
+                fill_triangle( renderer, properties,
+                    translated_verticies[pmodel->faces[i].v1],
+                    translated_verticies[pmodel->faces[i].v2],
+                    translated_verticies[pmodel->faces[i].v3]);
+            }
+            free(translated_verticies);
         } else {
             // rotate and move each vertex in model
             Vector2d verticies[model->vertex_count];

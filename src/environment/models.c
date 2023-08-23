@@ -335,30 +335,33 @@ Model *models_create_square(int size)
     return square;
 }
 
-Tri tri_create(Vector v1, Vector v2, Vector v3)
+Face face_create(unsigned int v1, unsigned int v2, unsigned int v3)
 {
-    Tri tri;
-    tri.v1 = v1;
-    tri.v2 = v2;
-    tri.v3 = v3;
-    return tri;
+    Face face;
+    face.v1 = v1;
+    face.v2 = v2;
+    face.v3 = v3;
+    return face;
 }
 
 pModel *pmodels_create_tetrahedron()
 {
     pModel *tetrahedron = malloc(sizeof(pModel));
-    tetrahedron->tri_count = 4;
-    tetrahedron->tris = malloc(4*sizeof(Tri));
-    Vector v1, v2, v3, v4;
-    v1 = vector_create(-5,5,0);
-    v2 = vector_create(5,5,0);
-    v3 = vector_create(0,-5,0);
-    v4 = vector_create(0,0,10);
+    tetrahedron->vertex_count = 4;
+    tetrahedron->verticies = malloc(4*sizeof(Vector));
 
-    tetrahedron->tris[0] = tri_create(v1,v2,v3);
-    tetrahedron->tris[1] = tri_create(v4,v1,v2);
-    tetrahedron->tris[2] = tri_create(v4,v2,v3);
-    tetrahedron->tris[3] = tri_create(v4,v1,v3);
+    tetrahedron->face_count = 4;
+    tetrahedron->faces = malloc(4*sizeof(Face));
+
+    tetrahedron->verticies[0] = vector_create(-5,5,0);
+    tetrahedron->verticies[1] = vector_create(5,5,0);
+    tetrahedron->verticies[2] = vector_create(0,-5,0);
+    tetrahedron->verticies[3] = vector_create(0,0,10);
+
+    tetrahedron->faces[0] = face_create(0,1,2);
+    tetrahedron->faces[1] = face_create(3,0,1);
+    tetrahedron->faces[2] = face_create(3,1,2);
+    tetrahedron->faces[3] = face_create(3,0,2);
 
     return tetrahedron;
 }

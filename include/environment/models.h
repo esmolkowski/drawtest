@@ -24,16 +24,19 @@ Model *models_create_square(int size);
 
 // Tri
 // a 2d triangle in 3d space
-typedef struct Tri {
-    Vector v1;
-    Vector v2;
-    Vector v3;
-} Tri;
+typedef struct Face {
+    // The vertex indexes of each face
+    unsigned int v1;
+    unsigned int v2;
+    unsigned int v3;
+} Face;
 
 // Polygonal Model
 typedef struct pModel {
-    int tri_count;
-    Tri *tris;
+    int vertex_count;
+    int face_count;
+    Vector *verticies;
+    Face *faces;
 } pModel;
 
 pModel *pmodels_create_tetrahedron();
