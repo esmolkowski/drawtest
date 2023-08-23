@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "app.h"
+#include "interfaces/renderer.h"
 #include "interfaces/timing.h"
 #include "datastructures/linked_list.h"
 #include "environment/environment.h"
@@ -64,6 +65,12 @@ int main(int argc, char *argv[])
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
+    // TODO: Refactor this
+    Renderer mRenderer;
+    mRenderer.sdl_renderer = renderer;
+    DrawColor draw_color;
+    mRenderer.draw_color = &draw_color;
+
     // Set up demo environment
     Environment *environment = environment_create_environment();
     
@@ -113,7 +120,7 @@ int main(int argc, char *argv[])
         tick_handle_inputs(environment, &properties);
 
         // draw frame
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        renderer_set_color(&mRenderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
         tick_run(&properties, environment);
@@ -130,7 +137,7 @@ int main(int argc, char *argv[])
 
         // draw frame
         //printf("\x1b[2J");
-        render_drawframe(renderer, frame, properties, environment);
+        render_drawframe(&mRenderer, frame, properties, environment);
         //fflush(stdout);
 
         // Copy inputs to to pinputs so it doesn't get overridden

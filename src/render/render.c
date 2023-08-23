@@ -1,6 +1,6 @@
 #include <math.h>
-#include "SDL.h"
 #include "app.h"
+#include "interfaces/renderer.h"
 #include "datastructures/linked_list.h"
 #include "environment/environment.h"
 #include "environment/models.h"
@@ -59,32 +59,7 @@ Vector2d translate_3d(Properties properties, Camera camera, Vector vertex)
     return v;
 }
 
-void term_draw_point(int x, int y) {
-    // make x twice as wide for a more square looking display.
-    x = x*2;
-    //printf("\x1b[%d;%dH##",y,x);
-}
-
-void draw_point(SDL_Renderer *renderer, Properties properties, int x, int y) {
-    // this should be handled by draw_offline_line?? but it's not working right so
-    // not drawing if out of bounds as a temporary fix.
-    if (abs(x) > properties.RENDER_WIDTH || abs(y) > properties.RENDER_HEIGHT) {
-        return;
-    }
-    if (x < 0 || y < 0) {
-        return;
-    }
-
-    // Draw points
-
-    SDL_RenderDrawPoint(renderer,
-        x, y
-    );
-
-    term_draw_point(x, y);
-}
-
-void draw_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, int x2, int y2) {
+void draw_line(Renderer *renderer, Properties properties, int x1, int y1, int x2, int y2) {
     int low, high;
     if (x1 == x2) {
         // vertical line
@@ -96,7 +71,7 @@ void draw_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, in
         }
         for (int y = low; y < high; y++)
         {
-            draw_point(renderer, properties, x1, y);
+            renderer_draw_point(renderer, &properties, x1, y);
         }
         return;
     }
@@ -114,7 +89,7 @@ void draw_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, in
         for (int x = low; x < high; x++)
         {
             int y = ((int)( m * (x-x1))) + y1;
-            draw_point(renderer, properties, x, y);
+            renderer_draw_point(renderer, &properties, x, y);
         }
     } else {
         // iterate by ys
@@ -127,15 +102,15 @@ void draw_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, in
         for (int y = low; y < high; y++)
         {
             int x = ((int)((y-y1)/m)) + x1;
-            draw_point(renderer, properties, x, y);
+            renderer_draw_point(renderer, &properties, x, y);
         }
     }
 }
 
-void draw_offset_point(SDL_Renderer *renderer, Properties properties, int x, int y)
+void draw_offset_point(Renderer *renderer, Properties properties, int x, int y)
 {
-    //term_draw_point(x+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y);
-    draw_point(renderer, properties,
+    //term_renderer_draw_point(x+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y);
+    renderer_draw_point(renderer, &properties,
         x+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y
     );
 }
@@ -163,7 +138,7 @@ int calculate_intercept(int bound, int i1, int j1, int i2, int j2) {
     );
 }
 
-void draw_offset_line(SDL_Renderer *renderer, Properties properties, int x1, int y1, int x2, int y2)
+void draw_offset_line(Renderer *renderer, Properties properties, int x1, int y1, int x2, int y2)
 {
     /*
         Draws a line between two points
@@ -273,36 +248,13 @@ void draw_offset_line(SDL_Renderer *renderer, Properties properties, int x1, int
         }
     }
 
-    /*
-        Off set axis to match SDL coordinates.
-        
-        Origin : x = 0, y = 0
-        
-        =>
-        
-        SDL Origin : x = width/2, y = height/2
-    */
-    // SDL_RenderDrawLine(renderer,
-    //     x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1,
-    //     x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2
-    // );
-    // term_draw_line(renderer, properties,
-    //     x1, y1,
-    //     x2, y2
-    // );
-    //term_draw_point(x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1);
-    //term_draw_point(x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2);
     draw_line(renderer, properties,
         x1+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y1,
         x2+properties.RENDER_HALF_WIDTH, properties.RENDER_HALF_HEIGHT-y2
     );
 }
 
-//void term_draw_line(int x1, int y1, int x2, int y2) {
-//
-//}
-
-void draw_circle(SDL_Renderer *renderer, Properties properties, double cX, double cY, double radius)
+void draw_circle(Renderer *renderer, Properties properties, double cX, double cY, double radius)
 {
     int32_t x = (radius - 1);
     int32_t y = 0;
@@ -335,7 +287,7 @@ void draw_circle(SDL_Renderer *renderer, Properties properties, double cX, doubl
     }
 }
 
-void fill_triangle(SDL_Renderer *renderer, Properties properties, Vector2d v1, Vector2d v2, Vector2d v3) {
+void fill_triangle(Renderer *renderer, Properties properties, Vector2d v1, Vector2d v2, Vector2d v3) {
     /*
         Fills in a triangle between three points by drawing vertical lines between:
             The line between the left point and the right most point.
@@ -407,8 +359,8 @@ void fill_triangle(SDL_Renderer *renderer, Properties properties, Vector2d v1, V
 }
 
 
-void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, Environment *environment) {  
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+void render_drawframe(Renderer *renderer, int frame, Properties properties, Environment *environment) {  
+    renderer_set_color(renderer, 255,255,0,255);
 
     //draw_offset_line(renderer, properties, -10,-10,10,50);
 
@@ -423,7 +375,7 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
         pModel *pmodel = entity->pmodel;
         char type = entity->type;
         Color color = entity->color;
-        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
+        renderer_set_color(renderer, color.r, color.g, color.b, 255);
         
         // If point entity then
         if (type == '.')
@@ -442,7 +394,7 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
                 int r = color.r-50+(rand() % 50);
                 int g = color.r-50+(rand() % 50);
                 int b = color.r-50+(rand() % 50);
-                SDL_SetRenderDrawColor(renderer, color.r,g,0, 255);
+                renderer_set_color(renderer, color.r,g,0, 255);
 
                 Vector v1 = pmodel->tris[i].v1;
                 Vector v2 = pmodel->tris[i].v2;
@@ -467,10 +419,6 @@ void render_drawframe(SDL_Renderer *renderer, int frame, Properties properties, 
                 Vector2d vf3 = translate_3d(properties, *(environment->camera), v3);
 
                 fill_triangle(renderer, properties, vf1, vf2, vf3);
-                //printf("hello i: %d | %f,%f %f,%f %f,%f\n\n", i, vf1.x, vf1.y, vf2.x, vf2.y, vf3.x, vf3.y);
-                //printf("hello1 i: %d | %d,%d,%d\n", i, v1.x, v2.x, v3.x);
-                //printf("hello2 i: %d | %f,%f,%f\n\n", i, vf1.x, vf2.x, vf3.x);
-                //break;
             }
         } else {
             // rotate and move each vertex in model

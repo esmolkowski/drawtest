@@ -7,6 +7,7 @@ include_directories(${SDL2_INCLUDE_DIRS})
 
 # Create a sources variable with a link to all cpp files to compile
 set(SOURCES
+    src/interfaces/renderer.c
     src/interfaces/inputs.c
     src/interfaces/timing.c
     src/datastructures/linked_list.c
