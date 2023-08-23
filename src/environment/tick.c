@@ -15,7 +15,6 @@
 void tick_handle_inputs(Environment *environment, Properties *properties) {
     bool puse = properties->previous_inputs->use;
     bool cuse = properties->inputs->use;
-    printf("%d,%d\n", properties->previous_inputs->use, cuse);
     if (
         (puse ^ cuse) &&
         (puse && !cuse)
