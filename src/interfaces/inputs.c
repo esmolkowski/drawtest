@@ -25,5 +25,6 @@ InputActions interface_get_inputs()
     if (keystate[SDL_SCANCODE_LEFT]) {inputs.left = true;}
     if (keystate[SDL_SCANCODE_UP]) {inputs.up = true;}
     if (keystate[SDL_SCANCODE_DOWN]) {inputs.down = true;}
+    if (keystate[SDL_SCANCODE_E]) {inputs.use = true;}
     return inputs;
 }

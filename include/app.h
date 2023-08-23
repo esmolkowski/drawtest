@@ -32,6 +32,7 @@ typedef struct Properties {
 
     Time start_time;
 
+    InputActions *previous_inputs;
     InputActions *inputs;
 } Properties;
 

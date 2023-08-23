@@ -17,6 +17,7 @@ typedef struct InputActions {
     bool up;
     bool down;
     bool quit;
+    bool use;
 } InputActions;
 
 InputActions interface_get_inputs();

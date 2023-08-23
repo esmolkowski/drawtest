@@ -25,18 +25,18 @@ int main(int argc, char *argv[])
 {
     // Initialize app properties before loop
     Properties properties;
-    properties.RENDER_WIDTH = 50;//320;
-    properties.RENDER_HEIGHT = 50;//240;
+    properties.RENDER_WIDTH = 64;//320;
+    properties.RENDER_HEIGHT = 64;//240;
     properties.RENDER_HALF_WIDTH = properties.RENDER_WIDTH/2;
     properties.RENDER_HALF_HEIGHT = properties.RENDER_HEIGHT/2;
-    properties.WINDOW_SCALE = 10.0;
+    properties.WINDOW_SCALE = 6.0;
 
     // used for FPS tracking
     properties.previous_frame = 0;
     properties.previous_tick = 0;
 
     // Set target fps and frametime (microseconds)
-    properties.target_fps = 60;
+    properties.target_fps = 20;
     properties.target_frametime = 1000000/properties.target_fps;
 
     properties.camera_rotate_speed = 1;
@@ -94,6 +94,11 @@ int main(int argc, char *argv[])
     ent1->angular_velocity = vector_create(2,.5,1);
     // end of demo environment setup
 
+    // Initialize previous frame items
+    InputActions pinputs = interface_get_inputs();
+    properties.previous_inputs = &pinputs;
+
+
     int frame = 0;
     while (true)
     {
@@ -128,6 +133,9 @@ int main(int argc, char *argv[])
         render_drawframe(renderer, frame, properties, environment);
         //fflush(stdout);
 
+        // Copy inputs to to pinputs so it doesn't get overridden
+        memcpy(&pinputs, &inputs, sizeof(InputActions));
+        properties.previous_inputs = &pinputs;
         properties.previous_frame = interface_get_epoch_microseconds();
         frame++;
 

@@ -13,32 +13,32 @@
 #define M_PI 3.14159265358979323846
 
 void tick_handle_inputs(Environment *environment, Properties *properties) {
-    // TODO: Re-add projectile shooting :)
-    /*
-                    // Fire projectile
-                    listNode *projectile_node = environment_add_entity(environment, entity_create(
-                        NULL, NULL, '.', color(255,255,0)
-                    ));
-                    Entity *projectile = projectile_node->data;
-                    Camera *camera = environment->camera;
-                    // code below launches entity in direction of viewpoint
-                    projectile->position.x = camera->position.x;
-                    projectile->position.y = camera->position.y;
-                    projectile->position.z = camera->position.z;
-                    double x,y,z;
-                    x = 100 * sin(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y); // phi, theta
-                    y = 100 * cos(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y);
-                    z = -100 * sin(camera->rotation.y); // theta
-                    projectile->velocity.x = x;
-                    projectile->velocity.y = y;
-                    projectile->velocity.z = z;
-                    break;
-            }
-            break;
-        default:
-            break;
+    bool puse = properties->previous_inputs->use;
+    bool cuse = properties->inputs->use;
+    printf("%d,%d\n", properties->previous_inputs->use, cuse);
+    if (
+        (puse ^ cuse) &&
+        (puse && !cuse)
+        )
+    {
+        // Fire projectile
+        listNode *projectile_node = environment_add_entity(environment, entity_create(
+            NULL, NULL, '.', color(255,255,0)
+        ));
+        Entity *projectile = projectile_node->data;
+        Camera *camera = environment->camera;
+        // code below launches entity in direction of viewpoint
+        projectile->position.x = camera->position.x;
+        projectile->position.y = camera->position.y;
+        projectile->position.z = camera->position.z;
+        double x,y,z;
+        x = 100 * sin(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y); // phi, theta
+        y = 100 * cos(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y);
+        z = -100 * sin(camera->rotation.y); // theta
+        projectile->velocity.x = x;
+        projectile->velocity.y = y;
+        projectile->velocity.z = z;
     }
-    */
 }
 
 void set_camera_velocities(Camera *camera, Properties *properties)
