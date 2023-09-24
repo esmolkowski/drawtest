@@ -365,3 +365,21 @@ pModel *pmodels_create_tetrahedron()
 
     return tetrahedron;
 }
+
+pModel *pmodels_create_triangle()
+{
+    pModel *triangle = malloc(sizeof(pModel));
+    triangle->vertex_count = 3;
+    triangle->verticies = malloc(3*sizeof(Vector));
+
+    triangle->face_count = 1;
+    triangle->faces = malloc(1*sizeof(Face));
+
+    triangle->verticies[0] = vector_create(-5,-5,0);
+    triangle->verticies[1] = vector_create(5,-5,0);
+    triangle->verticies[2] = vector_create(0,5,0);
+
+    triangle->faces[0] = face_create(0,1,2);
+
+    return triangle;
+}

@@ -3,6 +3,7 @@
 
 void renderer_set_color(Renderer * renderer, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 {
+    // currently unused, but it will be useful when adding in command line color support
     renderer->draw_color->r = r;
     renderer->draw_color->g = g;
     renderer->draw_color->b = b;

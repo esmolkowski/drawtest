@@ -40,5 +40,6 @@ typedef struct pModel {
 } pModel;
 
 pModel *pmodels_create_tetrahedron();
+pModel *pmodels_create_triangle();
 
 #endif

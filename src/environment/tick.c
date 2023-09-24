@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "datastructures/linked_list.h"
 #include "environment/environment.h"
+#include "environment/models.h"
 #include <math.h>
 #include <sys/time.h>
 #include <stdbool.h>
@@ -11,6 +12,46 @@
 #include "interfaces/timing.h"
 
 #define M_PI 3.14159265358979323846
+
+// pq is the line segment, abc is a triangle
+bool intersect_segment_triangle(Vector a, Vector b, Vector c, Vector p, Vector q)
+{
+    Vector ab = vector_subtract(b, a);
+    Vector ac = vector_subtract(c, a);
+    Vector qp = vector_subtract(p, q);
+
+
+    // triangle normal
+    Vector n = vector_cross(ab, ac);
+
+
+    // If d <= 0, the line segment is parallel or points away from the triangle
+    double d = vector_dot(qp, n);
+    if (d <= 0.0) { return false; }
+
+
+    Vector ap = vector_subtract(p, a);
+    double t = vector_dot(ap, n);
+    if (t < 0.0) { return false; }
+
+
+    // Compute barycentric coordinate components and test if within bounds
+    Vector e = vector_cross(qp, ap);
+    double v = vector_dot(ac, e);
+    if (v < 0.0 || v > d) { return false; }
+    double w = -vector_dot(ab, e);
+    if (w < 0.0 || v + w > d) { return false; }
+
+    // Segment/ray intersects triangle. Perform delayed division and
+    // compute the last barycentric coordinate component
+    double ood = 1.0 / d;
+    t *= ood;
+    v *= ood;
+    w *= ood;
+    double u = 1.0 - v - w;
+    printf("intersects at %f, %f, %f", u, v, w);
+    return true;
+}
 
 void tick_handle_inputs(Environment *environment, Properties *properties) {
     bool puse = properties->previous_inputs->use;
@@ -95,14 +136,11 @@ void tick_run(Properties *properties, Environment *environment) {
         );
         vector_move_angled(
             &(camera->position),
-            camera->rotation.x + 1.57079632679,
+            camera->rotation.x + 1.57079632679, // PI/2
             camera->strafe_speed*properties->ticktime
         );
         camera->position.z += camera->up_speed*properties->ticktime;
 
-        // entity tick
-        //int entity_count = environment->entity_count;
-        //for (int i = 0; i < entity_count; i++)
         listNode *current_node = environment->entities;
         while (current_node != NULL)
         {
@@ -139,6 +177,39 @@ void tick_run(Properties *properties, Environment *environment) {
             entity->velocity.x += entity->acceleration.x*properties->ticktime;
             entity->velocity.y += entity->acceleration.y*properties->ticktime;
             entity->velocity.z += entity->acceleration.z*properties->ticktime;
+
+            pModel *pmodel = entity->pmodel;
+            //printf("meow %i\n", pmodel->vertex_count);
+            //printf("entity pos, %d,%d,%d\n", entity->position.x,entity->position.y,entity->position.z);
+            //for (int i = 0; i < pmodel->face_count; i++)
+            //{
+                //Face face = pmodel->faces[i];
+                double x,y,z;
+                x = 2 * sin(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y); // phi, theta
+                y = 2 * cos(M_PI/2 - camera->rotation.x) * cos(camera->rotation.y);
+                z = -2 * sin(camera->rotation.y); // theta
+
+
+
+                //int array = {0, 1, 2, 3, 4, 5, 6, 7};
+
+                // printf("face %i, %i, %i", face.v1, face.v2, face.v3);
+                // if (face.v3 == 2) {
+                //     printf("3!!\n");
+                // }
+                //printf("c %i", pmodel->vertex_count);
+
+                Vector a = pmodel->verticies[0];
+                Vector b = pmodel->verticies[1];
+                Vector c = pmodel->verticies[2];
+
+                printf("a %f,%f,%f\n", a.x,a.y,a.z);
+                printf("b %f,%f,%f\n", b.x,b.y,b.z);
+                printf("c %f,%f,%f\n", c.x,c.y,c.z);
+
+                //intersect_segment_triangle(a,b,c, camera->position, vector_create(x,y,z));
+                intersect_segment_triangle(a,b,c, camera->position, vector_create(0,0,0));
+            //}
 
             // calculate interactions
             // not functional after move to LL for entities

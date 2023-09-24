@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     properties.previous_tick = 0;
 
     // Set target fps and frametime (microseconds)
-    properties.target_fps = 20;
+    properties.target_fps = 60;
     properties.target_frametime = 1000000/properties.target_fps;
 
     properties.camera_rotate_speed = 1;
@@ -74,31 +74,37 @@ int main(int argc, char *argv[])
     // Set up demo environment
     Environment *environment = environment_create_environment();
     
-    Entity *pyramid = environment_add_entity(environment, entity_create(
-        models_create_pyramid(10), NULL, 'w', color(253,166,58)
-    ))->data;
-    pyramid->position = vector_create(-20,-10,-10);
-    pyramid->velocity.z = 1;
-    pyramid->angular_velocity.y = .1;
-    Entity *hex = environment_add_entity(environment, entity_create(
-        models_create_hexagonal_prism(), NULL, 'w', color(255,90,0)
-    ))->data;
-    hex->angular_velocity = vector_create(1,.1,-.3);
-    hex->position = vector_create(30,50,-10);
-    listNode *ent2 = environment_add_entity(environment, entity_create(
-        models_create_cube(200), NULL, 'w', color(255,255,0)
-    ));
-    Entity *ent = environment_add_entity(environment, entity_create(
-        NULL, pmodels_create_tetrahedron(), 'p', color(255,255,0)
-    ))->data;
-    ent->position = vector_create(10,10,10);
-    ent->angular_velocity = vector_create(2,2,0);
+    // Entity *pyramid = environment_add_entity(environment, entity_create(
+    //     models_create_pyramid(10), NULL, 'w', color(253,166,58)
+    // ))->data;
+    // pyramid->position = vector_create(-20,-10,-10);
+    // pyramid->velocity.z = 1;
+    // pyramid->angular_velocity.y = .1;
+    // Entity *hex = environment_add_entity(environment, entity_create(
+    //     models_create_hexagonal_prism(), NULL, 'w', color(255,90,0)
+    // ))->data;
+    // hex->angular_velocity = vector_create(1,.1,-.3);
+    // hex->position = vector_create(30,50,-10);
+    // listNode *ent2 = environment_add_entity(environment, entity_create(
+    //     models_create_cube(200), NULL, 'w', color(255,255,0)
+    // ));
+    // Entity *ent = environment_add_entity(environment, entity_create(
+    //     NULL, pmodels_create_tetrahedron(), 'p', color(255,255,0)
+    // ))->data;
+    // ent->position = vector_create(10,10,10);
+    // ent->angular_velocity = vector_create(2,2,0);
 
-    Entity *ent1 = environment_add_entity(environment, entity_create(
-        NULL, pmodels_create_tetrahedron(), 'p', color(0,255,0)
+    // Entity *ent1 = environment_add_entity(environment, entity_create(
+    //     NULL, pmodels_create_tetrahedron(), 'p', color(0,255,0)
+    // ))->data;
+
+    Entity *ent2 = environment_add_entity(environment, entity_create(
+        NULL, pmodels_create_triangle(), 'p', color(0,255,255)
     ))->data;
-    ent1->position = vector_create(-50,10,-30);
-    ent1->angular_velocity = vector_create(2,.5,1);
+    //ent2->rotation = vector_create(0,1.6,0);
+    //ent2->angular_velocity.x = 5;
+    //ent2->position = vector_create(0,0,10);
+    //ent1->angular_velocity = vector_create(2,.5,1);
     // end of demo environment setup
 
     // Initialize previous frame items

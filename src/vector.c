@@ -104,3 +104,28 @@ double vector_magnitute(Vector vector)
 {
     return sqrt( pow(vector.x,2) + pow(vector.y,2) + pow(vector.z,2) );
 }
+
+Vector vector_cross(Vector v1, Vector v2)
+// cross product
+{
+    double i,j,k;
+    i = (v1.y*v2.z)-(v1.z-v2.y);
+    j = -((v1.x*v2.z)-(v1.z*v2.x));
+    k = (v1.x*v2.y)-(v1.y*v2.x);
+    return vector_create(i,j,k);
+}
+
+Vector vector_add(Vector v1, Vector v2)
+{
+    return vector_create(v1.x+v2.x, v1.y+v2.y, v1.z+v2.z);
+}
+
+Vector vector_subtract(Vector v1, Vector v2)
+{
+    return vector_create(v1.x-v2.x, v1.y-v2.y, v1.z-v2.z);
+}
+
+double vector_dot(Vector v1, Vector v2)
+{
+    return (v1.x*v2.x) + (v1.y*v2.y) + (v1.z*v2.z);
+}

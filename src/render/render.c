@@ -12,6 +12,10 @@
 
 #define M_PI 3.14159265358979323846
 
+/*
+This function takes a camera location and 3d vertex location and projects it onto
+a 2d plane at the origin aka the viewport.
+*/
 Vector2d translate_3d(Properties properties, Camera camera, Vector vertex)
 {
     double x,y,z,a; // temporary varaibles to do math with
@@ -49,8 +53,7 @@ Vector2d translate_3d(Properties properties, Camera camera, Vector vertex)
 
     y = (vertex.y)/vertex.x * (double)properties.RENDER_WIDTH;
     z = (vertex.z)/vertex.x * (double)properties.RENDER_HEIGHT;
-    //vertex.y = z;
-    //vertex.x = -y;
+
     Vector2d v;
     v.x = -y;
     v.y = z;
@@ -360,6 +363,20 @@ void fill_triangle(Renderer *renderer, Properties properties, Vector2d v1, Vecto
 
 
 void render_drawframe(Renderer *renderer, int frame, Properties properties, Environment *environment) {  
+    renderer_set_color(renderer, 255,0,0,255);
+        for (int i = -50; i < 50; i += 10)
+        {
+            Vector2d v = translate_3d(properties, *(environment->camera), vector_create((double)i, -50,0));
+            Vector2d v2 = translate_3d(properties, *(environment->camera), vector_create((double)i, 50,0));
+            //draw_offset_point(renderer, properties, (int)v.x, (int)v.y);
+            draw_offset_line(renderer, properties, (int)v.x, (int)v.y, (int)v2.x, (int)v2.y);
+
+            Vector2d v3 = translate_3d(properties, *(environment->camera), vector_create(-50, (double)i,0));
+            Vector2d v4 = translate_3d(properties, *(environment->camera), vector_create(50, (double)i ,0));
+
+            draw_offset_line(renderer, properties, (int)v3.x, (int)v3.y, (int)v4.x, (int)v4.y);
+        }
+    
     renderer_set_color(renderer, 255,255,0,255);
 
     //draw_offset_line(renderer, properties, -10,-10,10,50);
@@ -451,6 +468,7 @@ void render_drawframe(Renderer *renderer, int frame, Properties properties, Envi
             }
         }
         current_node = current_node->next;
+        
     }
 
     /*
